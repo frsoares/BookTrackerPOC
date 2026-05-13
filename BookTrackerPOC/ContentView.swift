@@ -58,7 +58,7 @@ struct ContentView: View {
         NavigationLink {
             BookEditView(book: Book(), isEditing: true)
         } label: {
-            Label("Create new book", systemImage: "plus.circle.fill")
+            Label("Create new book", systemImage: "plus")
         }
     }
 
