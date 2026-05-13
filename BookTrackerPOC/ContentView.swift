@@ -39,7 +39,7 @@ struct ContentView: View {
         .navigationTitle("What I'm Reading")
         .toolbarTitleDisplayMode(.large)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: .navigation) {
                 NavigationLink("Past readings", destination: {
                     PastReadingsView()
                 })
@@ -78,5 +78,8 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    NavigationStack {
+        ContentView()
+    }
+    .modelContainer(for: [Book.self], inMemory: true)
 }

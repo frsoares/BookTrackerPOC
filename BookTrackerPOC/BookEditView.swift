@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import PhotosUI
 
 struct BookEditView: View {
 
@@ -17,6 +18,8 @@ struct BookEditView: View {
     @State private var showingAlert = false
     @State private var showErrorAlert = false
     @State var isEditing = false
+
+    @State private var selection: PhotosPickerItem?
 
     var body: some View {
         if isEditing {
@@ -33,9 +36,21 @@ struct BookEditView: View {
                 Spacer()
                 Text(book.author)
             }
-            Text("Comments").bold()
-            Text(book.review)
-                .multilineTextAlignment(.leading)
+            Section("Comments") {
+                Text(book.review)
+                    .multilineTextAlignment(.leading)
+            }
+            Section("Reference Image") {
+                if let imagedata = book.imagedata, let uiImage = UIImage(data: imagedata) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+//                        .scaledToFit()
+                        .aspectRatio(3/4, contentMode: .fit)
+                } else {
+                    let url = URL(string: "https://upload.wikimedia.org/wikipedia/commons/b/bf/Zines-fromlondonsymp07.jpg")
+                    AsyncImage(url: url)
+                }
+            }
         }
         .navigationTitle(book.name)
         .toolbar {
@@ -55,18 +70,29 @@ struct BookEditView: View {
                 Section ("Basic Info") {
                     HStack {
                         TextField("Book title:", text: $book.name, prompt: Text("The book's title"))
-                        Button {
-
-                        } label: {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .foregroundStyle(.tint)
-                                Image(systemName: "camera.fill")
-                                    .foregroundStyle(Color.white)
+                        PhotosPicker(
+                            selection: $selection,
+                            matching: .images
+                        ) {
+                            if let imageData = book.imagedata,
+                                let uiImage = UIImage(data: imageData) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .aspectRatio(1.0, contentMode: .fit)
+                                    .frame(maxWidth: 100)
+                            } else {
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .foregroundStyle(.tint)
+                                    Image(systemName: "camera.fill")
+                                        .foregroundStyle(Color.white)
+                                }
+                                .aspectRatio(1.0, contentMode: .fit)
+                                .frame(maxWidth: 100)
                             }
                         }
-                        .aspectRatio(1.0, contentMode: .fit)
-                        .frame(maxWidth: 100)
+                        .photosPickerStyle(.presentation)
+                        .photosPickerDisabledCapabilities(.sensitivityAnalysisIntervention)
                     }
                     TextField("Book author:", text: $book.author, prompt: Text("The book's author"))
                 }
@@ -87,7 +113,6 @@ struct BookEditView: View {
                     showErrorAlert.toggle()
                 }
             }
-
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -95,11 +120,30 @@ struct BookEditView: View {
                     save()
                 } label: {
                     Text("Save")
-//                    Label("Save", systemImage: "pencil")
                 }
                 .foregroundStyle(.tint)
             }
         }
+        .onChange(of: selection) {
+            if let selection {
+                Task {
+                    do {
+                        if let image = try await loadTransferrable(from: selection) {
+                            // only updating if we manage to load the image, so we don't
+                            // delete images that were loaded before for nothing
+                            self.book.imagedata = image
+                        }
+                    } catch {
+                        print(error.localizedDescription)
+                    }
+                }
+            }
+        }
+    }
+
+
+    private func loadTransferrable(from photoItem: PhotosPickerItem) async throws -> Data? {
+        try await photoItem.loadTransferable(type: Data.self)
     }
 
     fileprivate func save() {
@@ -120,5 +164,7 @@ struct BookEditView: View {
 }
 
 #Preview {
-    BookEditView(book: Book(name: "The Swift Programming Language", author: "Apple Inc.", review: "A great book"))
+    NavigationStack {
+        BookEditView(book: Book(name: "The Swift Programming Language", author: "Apple Inc.", review: "A great book"))
+    }
 }
