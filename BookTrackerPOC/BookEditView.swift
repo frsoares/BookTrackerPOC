@@ -47,7 +47,9 @@ struct BookEditView: View {
 //                        .scaledToFit()
                         .aspectRatio(3/4, contentMode: .fit)
                 } else {
-                    let url = URL(string: "https://upload.wikimedia.org/wikipedia/commons/b/bf/Zines-fromlondonsymp07.jpg")
+                    let url = URL(
+                        string: "https://upload.wikimedia.org/wikipedia/commons/b/bf/Zines-fromlondonsymp07.jpg"
+                    )
                     AsyncImage(url: url)
                 }
             }
@@ -67,7 +69,7 @@ struct BookEditView: View {
     private var editBody: some View {
         VStack {
             Form {
-                Section ("Basic Info") {
+                Section("Basic Info") {
                     HStack {
                         TextField("Book title:", text: $book.name, prompt: Text("The book's title"))
                         PhotosPicker(
@@ -140,7 +142,6 @@ struct BookEditView: View {
             }
         }
     }
-
 
     private func loadTransferrable(from photoItem: PhotosPickerItem) async throws -> Data? {
         try await photoItem.loadTransferable(type: Data.self)
