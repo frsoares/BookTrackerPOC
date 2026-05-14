@@ -41,11 +41,22 @@ struct BookEditView: View {
                     .multilineTextAlignment(.leading)
             }
             Section("Reference Image") {
-                if let imagedata = book.imagedata, let uiImage = UIImage(data: imagedata) {
-                    Image(uiImage: uiImage)
-                        .resizable()
-//                        .scaledToFit()
-                        .aspectRatio(3/4, contentMode: .fit)
+                if let imagedata = book.imagedata {
+                    #if !os(macOS)
+                    if let uiImage = UIImage(data: imagedata) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                        //                        .scaledToFit()
+                            .aspectRatio(3/4, contentMode: .fit)
+                    }
+                    #else
+                    if let nsImage = NSImage(data: imagedata) {
+                        Image(nsImage: nsImage)
+                            .resizable()
+                        //                        .scaledToFit()
+                            .aspectRatio(3/4, contentMode: .fit)
+                    }
+                    #endif
                 } else {
                     let url = URL(
                         string: "https://upload.wikimedia.org/wikipedia/commons/b/bf/Zines-fromlondonsymp07.jpg"
@@ -56,7 +67,7 @@ struct BookEditView: View {
         }
         .navigationTitle(book.name)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .primaryAction) {
                 Button {
                     isEditing = true
                 } label: {
@@ -76,12 +87,22 @@ struct BookEditView: View {
                             selection: $selection,
                             matching: .images
                         ) {
-                            if let imageData = book.imagedata,
-                                let uiImage = UIImage(data: imageData) {
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .aspectRatio(1.0, contentMode: .fit)
-                                    .frame(maxWidth: 100)
+                            if let imageData = book.imagedata {
+#if !os(macOS)
+                                if let uiImage = UIImage(data: imageData) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .aspectRatio(1.0, contentMode: .fit)
+                                        .frame(maxWidth: 100)
+                                }
+#else
+                                if let nsImage = NSImage(data: imageData) {
+                                    Image(nsImage: nsImage)
+                                        .resizable()
+                                        .aspectRatio(1.0, contentMode: .fit)
+                                        .frame(maxWidth: 100)
+                                }
+#endif
                             } else {
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 8)
@@ -117,7 +138,7 @@ struct BookEditView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .primaryAction) {
                 Button {
                     save()
                 } label: {

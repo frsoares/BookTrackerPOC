@@ -24,7 +24,9 @@ struct ContentView: View {
             }
             .onDelete(perform: delete(at:))
         }
+#if !os(macOS)
         .listRowSpacing(4)
+#endif
         .overlay {
             if books.isEmpty {
                 ContentUnavailableView {
@@ -37,7 +39,9 @@ struct ContentView: View {
             }
         }
         .navigationTitle("What I'm Reading")
+#if !os(macOS)
         .toolbarTitleDisplayMode(.large)
+#endif
         .toolbar {
             ToolbarItem(placement: .navigation) {
                 NavigationLink("Past readings", destination: {
@@ -45,7 +49,9 @@ struct ContentView: View {
                 })
                 .padding()
             }
-            ToolbarItem(placement: .topBarTrailing) {
+            let placement = ToolbarItemPlacement.primaryAction
+
+            ToolbarItem(placement: placement) {
                 newBookView
             }
         }
