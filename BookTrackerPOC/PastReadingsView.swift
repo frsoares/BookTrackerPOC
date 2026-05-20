@@ -12,8 +12,8 @@ struct PastReadingsView: View {
 
     @Environment(\.modelContext) var context
     @Query(
-        filter: #Predicate<Book> {
-            $0.finished == true
+        filter: #Predicate<Book> { book in
+            book.finished == true
         },
         animation: .interactiveSpring) var books: [Book]
 

@@ -12,7 +12,9 @@ struct ContentView: View {
 
     @Environment(\.modelContext) var context
     @Query(
-        filter: #Predicate<Book> { $0.finished == false },
+        filter: #Predicate<Book> { book in
+            book.finished == false
+        },
         animation: .interactiveSpring) var books: [Book]
 
     var body: some View {
