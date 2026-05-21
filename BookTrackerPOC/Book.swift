@@ -16,11 +16,27 @@ final class Book {
     var finished: Bool
     @Attribute(.externalStorage) var imagedata: Data?
 
-    init(name: String = "", author: String = "", review: String = "", finished: Bool = false, imageData: Data? = nil) {
+    init(
+        name: String = "",
+        author: String = "",
+        review: String = "",
+        finished: Bool = false,
+        imageData: Data? = nil
+    ) {
         self.name = name
         self.author = author
         self.review = review
         self.finished = finished
         self.imagedata = imageData
+    }
+
+    static func predicate(searchText: String) -> Predicate<Book> {
+        return #Predicate<Book> { book in
+            !searchText.isEmpty && (
+                book.name.starts(with: searchText) ||
+                book.author.starts(with: searchText) ||
+                book.review.contains(searchText)
+            )
+        }
     }
 }

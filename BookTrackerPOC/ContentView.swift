@@ -17,6 +17,8 @@ struct ContentView: View {
         },
         animation: .interactiveSpring) var books: [Book]
 
+    @State var presentSheet = false
+
     var body: some View {
         List {
             ForEach(books) { book in
@@ -41,12 +43,6 @@ struct ContentView: View {
         .navigationTitle("What I'm Reading")
         .toolbarTitleDisplayMode(.large)
         .toolbar {
-            ToolbarItem(placement: .navigation) {
-                NavigationLink("Past readings", destination: {
-                    PastReadingsView()
-                })
-                .padding()
-            }
             let placement = ToolbarItemPlacement.primaryAction
 
             ToolbarItem(placement: placement) {
@@ -55,6 +51,11 @@ struct ContentView: View {
         }
         .navigationDestination(for: Book.self) { book in
             BookEditView(book: book)
+        }
+        .sheet(isPresented: $presentSheet) {
+            NavigationStack {
+                BookEditView(book: Book(), isEditing: true)
+            }
         }
     }
 

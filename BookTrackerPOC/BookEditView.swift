@@ -21,6 +21,8 @@ struct BookEditView: View {
 
     @State private var selection: PhotosPickerItem?
 
+    @State private var date: Date = .now
+
     var body: some View {
         if isEditing {
             editBody
@@ -89,7 +91,7 @@ struct BookEditView: View {
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 8)
                                         .foregroundStyle(.tint)
-                                    Image(systemName: "camera.fill")
+                                    Image(systemName: "photo.badge.plus.fill")
                                         .foregroundStyle(Color.white)
                                 }
                                 .aspectRatio(1.0, contentMode: .fit)

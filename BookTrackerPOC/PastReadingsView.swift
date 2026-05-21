@@ -31,7 +31,7 @@ struct PastReadingsView: View {
         .overlay {
             if books.isEmpty {
                 ContentUnavailableView(
-                    "No books read yeat",
+                    "No books read yet",
                     systemImage: "bookmarks.slash",
                     description: Text(
                         "Read some books so there'll be something to show here!"
