@@ -43,20 +43,13 @@ struct BookEditView: View {
                     .multilineTextAlignment(.leading)
             }
             Section("Reference Image") {
-                if let imagedata = book.imagedata {
-                    if let uiImage = UIImage(data: imagedata) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                        //                        .scaledToFit()
-                            .aspectRatio(3/4, contentMode: .fit)
-                    }
-                } else {
-                    let url = URL(
-                        string: "https://upload.wikimedia.org/wikipedia/commons/b/bf/Zines-fromlondonsymp07.jpg"
-                    )
-                    AsyncImage(url: url)
+                HStack {
+                    Spacer()
+                    bookImage
+                    Spacer()
                 }
             }
+            .listRowBackground(EmptyView())
         }
         .navigationTitle(book.name)
         .toolbar {
@@ -70,7 +63,47 @@ struct BookEditView: View {
         }
     }
 
-    private var editBody: some View {
+    @ViewBuilder
+    private var photoPickerBody: some View {
+        if let imageData = book.imagedata {
+            if let uiImage = UIImage(data: imageData) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .aspectRatio(1.0, contentMode: .fit)
+                    .frame(maxWidth: 100)
+                    .clipShape(.rect(cornerRadius: 8))
+            }
+        } else {
+            ZStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .foregroundStyle(.tint)
+                Image(systemName: "photo.badge.plus.fill")
+                    .foregroundStyle(Color.white)
+                    .font(.largeTitle)
+            }
+            .aspectRatio(1.0, contentMode: .fit)
+            .frame(maxWidth: 80)
+        }
+    }
+
+    @ViewBuilder
+    var bookImage: some View {
+        if let imagedata = book.imagedata {
+            if let uiImage = UIImage(data: imagedata) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                //                        .scaledToFit()
+                    .aspectRatio(3/4, contentMode: .fit)
+            }
+        } else {
+            let url = URL(
+                string: "https://upload.wikimedia.org/wikipedia/commons/b/bf/Zines-fromlondonsymp07.jpg"
+            )
+            AsyncImage(url: url)
+        }
+    }
+
+    var editBody: some View {
         VStack {
             Form {
                 Section("Basic Info") {
@@ -80,23 +113,7 @@ struct BookEditView: View {
                             selection: $selection,
                             matching: .images
                         ) {
-                            if let imageData = book.imagedata {
-                                if let uiImage = UIImage(data: imageData) {
-                                    Image(uiImage: uiImage)
-                                        .resizable()
-                                        .aspectRatio(1.0, contentMode: .fit)
-                                        .frame(maxWidth: 100)
-                                }
-                            } else {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .foregroundStyle(.tint)
-                                    Image(systemName: "photo.badge.plus.fill")
-                                        .foregroundStyle(Color.white)
-                                }
-                                .aspectRatio(1.0, contentMode: .fit)
-                                .frame(maxWidth: 100)
-                            }
+                            photoPickerBody
                         }
                         .photosPickerStyle(.presentation)
                         .photosPickerDisabledCapabilities(.sensitivityAnalysisIntervention)
@@ -134,14 +151,10 @@ struct BookEditView: View {
         .onChange(of: selection) {
             if let selection {
                 Task {
-                    do {
-                        if let image = try await loadTransferrable(from: selection) {
-                            // only updating if we manage to load the image, so we don't
-                            // delete images that were loaded before for nothing
-                            self.book.imagedata = image
-                        }
-                    } catch {
-                        print(error.localizedDescription)
+                    if let image = try? await loadTransferrable(from: selection) {
+                        // only updating if we manage to load the image, so we don't
+                        // delete images that were loaded before for nothing
+                        self.book.imagedata = image
                     }
                 }
             }
@@ -173,4 +186,55 @@ struct BookEditView: View {
     NavigationStack {
         BookEditView(book: Book(name: "The Swift Programming Language", author: "Apple Inc.", review: "A great book"))
     }
+}
+
+#Preview("Diss") {
+    DisclosureGroup("Textinho") {
+        HStack {
+            Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. ")
+            Spacer()
+        }
+    }
+}
+
+struct VerticalSmileys: View {
+    let columns = [
+        GridItem(.flexible()),
+        GridItem(.flexible()),
+        GridItem(.flexible())
+    ]
+
+    let simbolos = [""]
+
+    var body: some View {
+         ScrollView {
+             LazyVGrid(columns: columns) {
+                 ForEach(0x1f600...0x1f679, id: \.self) { value in
+//                     Text(String(format: "%x", value))
+                     Button {
+                         print("tocou num emoji")
+                     } label: {
+                         Text(emoji(value))
+                             .font(.largeTitle)
+                             .background {
+                                 RoundedRectangle(cornerRadius: 16)
+                                     .fill(.ultraThinMaterial)
+                             }
+                             .glassEffect(in: .rect(cornerRadius: 8))
+                             .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 10)
+                     }
+                 }
+             }
+         }
+    }
+
+
+    private func emoji(_ value: Int) -> String {
+        guard let scalar = UnicodeScalar(value) else { return "?" }
+        return String(Character(scalar))
+    }
+}
+
+#Preview("sorrisos") {
+    VerticalSmileys()
 }
